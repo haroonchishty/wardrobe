@@ -10,8 +10,20 @@ export async function runVtonModel(input) {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to run model");
+    let message = "Failed to run model";
+    try {
+      const error = await response.json();
+      message = error.error || message;
+      if (error.details) {
+        message += `: ${error.details}`;
+      }
+    } catch {
+      const text = await response.text();
+      if (text) {
+        message = `${message}: ${text}`;
+      }
+    }
+    throw new Error(message);
   }
 
   const { output, url } = await response.json();

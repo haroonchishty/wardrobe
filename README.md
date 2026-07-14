@@ -9,13 +9,21 @@ A mobile-first React app for the Replicate virtual try-on model, with a Cloudfla
    npm install
    ```
 
-2. Copy the example env file and add your Replicate token:
+2. Copy the example env file and add your Replicate and imgbb keys:
    ```bash
    cp .env.example .env
    ```
    The `.env` file should contain:
    ```
    REPLICATE_API_TOKEN=your_token_here
+   IMGBB_API_KEY=your_imgbb_api_key
+   ```
+
+   Note: Cloudflare Workers do not automatically load values from `.env`. You must also configure these keys as worker secrets for local `wrangler dev` and production deploys.
+
+   ```bash
+   wrangler secret put REPLICATE_API_TOKEN
+   wrangler secret put IMGBB_API_KEY
    ```
 
 ## Local development
@@ -43,17 +51,17 @@ npm run deploy
 ```
 
 This will:
-1. Build the React app
-2. Deploy the Cloudflare Worker
-3. Provide your worker URL
+1. Deploy the Cloudflare Worker
+2. Build the React app
+3. Publish the frontend to GitHub Pages
 
-After deployment, update your frontend `VITE_API_URL`:
+Before running this command, set `VITE_API_URL` to your worker URL if you want the built frontend to point to the deployed worker:
 
 ```bash
-VITE_API_URL=https://your-worker.your-subdomain.workers.dev npm run build
+VITE_API_URL=https://your-worker.your-subdomain.workers.dev npm run deploy
 ```
 
-Then redeploy the worker.
+If you do not set `VITE_API_URL`, the app will build with the default local API URL and may not work in production.
 
 ## How it works
 

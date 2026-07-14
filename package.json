@@ -17,7 +17,7 @@
     "worker:dev": "wrangler dev",
     "worker:deploy": "wrangler deploy",
     "deploy:gh-pages": "GITHUB_PAGES=true npm run build && gh-pages -d dist",
-    "deploy": "npm run worker:deploy"
+    "deploy": "npm run worker:deploy && npm run deploy:gh-pages"
   },
   "dependencies": {
     "cors": "^2.8.5",

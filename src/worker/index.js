@@ -14,6 +14,58 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // Route: POST /api/upload-imgbb
+    if (url.pathname === "/api/upload-imgbb" && request.method === "POST") {
+      try {
+        const { image } = await request.json();
+        if (!image) {
+          return new Response(
+            JSON.stringify({ error: "Missing required field: image" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        const imgbbKey = env.IMGBB_API_KEY;
+        if (!imgbbKey) {
+          return new Response(
+            JSON.stringify({ error: "IMGBB_API_KEY not configured" }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        const form = new URLSearchParams();
+        form.append("key", imgbbKey);
+        form.append("image", image);
+
+        const imgbbResponse = await fetch("https://api.imgbb.com/1/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: form.toString()
+        });
+
+        if (!imgbbResponse.ok) {
+          const error = await imgbbResponse.text();
+          console.error("imgbb error:", error);
+          return new Response(
+            JSON.stringify({ error: "imgbb upload failed" }),
+            { status: imgbbResponse.status, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        const result = await imgbbResponse.json();
+        return new Response(
+          JSON.stringify({ url: result.data.url }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      } catch (error) {
+        console.error("imgbb upload error:", error);
+        return new Response(
+          JSON.stringify({ error: error.message || "Internal server error" }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    }
+
     // Route: POST /api/run-vton
     if (url.pathname === "/api/run-vton" && request.method === "POST") {
       try {
@@ -34,12 +86,19 @@ export default {
           );
         }
 
-        const input = {
+        function removeEmptyStrings(data) {
+          return Object.fromEntries(
+            Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== "")
+          );
+        }
+
+        const input = ({
           garm_img,
           human_img,
-          garment_des: garment_des || "",
-          category: category || ""
-        };
+          garment_des,
+          // garment_des: garment_des || " ",
+          category: category || "upper_body"
+        });
 
         // Call Replicate API
         const replicateResponse = await fetch("https://api.replicate.com/v1/predictions", {
@@ -55,10 +114,10 @@ export default {
         });
 
         if (!replicateResponse.ok) {
-          const error = await replicateResponse.text();
-          console.error("Replicate error:", error);
+          const errorText = await replicateResponse.text();
+          console.error("Replicate error:", errorText);
           return new Response(
-            JSON.stringify({ error: `Replicate API error: ${replicateResponse.status}` }),
+            JSON.stringify({ error: `Replicate API error: ${replicateResponse.status}`, details: errorText }),
             { status: replicateResponse.status, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }

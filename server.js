@@ -37,11 +37,17 @@ app.post("/api/run-vton", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields: garm_img, human_img" });
     }
 
-    const input = {
+    function removeEmptyStrings(data) {
+      return Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== "")
+      );
+    }
+
+    const input = removeEmptyStrings({
       garm_img,
       human_img,
-      garment_des: garment_des || ""
-    };
+      garment_des
+    });
 
     const output = await replicate.run(MODEL_ID, { input });
     const url = extractOutputUrl(output);

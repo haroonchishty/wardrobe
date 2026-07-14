@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { runVtonModel } from "./api/replicateClient";
+import { uploadImage } from "./api/imgbbClient";
 
 const DEFAULT_GARM_IMG = "https://replicate.delivery/pbxt/KgwTlZyFx5aUU3gc5gMiKuD5nNPTgliMlLUWx160G4z99YjO/sweater.webp";
 // const DEFAULT_HUMAN_IMG = `${import.meta.env.BASE_URL}model/model.jpeg`;
@@ -14,6 +15,8 @@ function App() {
   const [status, setStatus] = useState("Ready to generate.");
   const [resultUrl, setResultUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadingField, setUploadingField] = useState("");
   const [error, setError] = useState(null);
 
   const previewItems = useMemo(
@@ -24,6 +27,52 @@ function App() {
     [garmImg, humanImg]
   );
 
+  const handleFileUpload = async (event, field) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setUploading(true);
+    setUploadingField(field);
+    setStatus(`Uploading ${field === "garment" ? "garment" : "person"} image...`);
+
+    try {
+      const fileData = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const base64 = fileData.split(",")[1];
+      const { url } = await uploadImage(base64);
+      if (!url) {
+        throw new Error("Image upload failed");
+      }
+
+      if (field === "garment") {
+        setGarmImg(url);
+      } else {
+        setHumanImg(url);
+      }
+
+      setStatus("Image uploaded successfully.");
+    } catch (err) {
+      setError(err.message || "Upload failed.");
+      setStatus("Image upload failed.");
+    } finally {
+      setUploading(false);
+      setUploadingField("");
+    }
+  };
+
+  const cleanInput = (data) =>
+    Object.fromEntries(
+      Object.entries(data).filter(([key, value]) =>
+        key === "garment_des" ? value !== undefined && value !== null : value !== undefined && value !== null && value !== ""
+      )
+    );
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
@@ -32,12 +81,12 @@ function App() {
     setStatus("Running model...");
 
     try {
-      const input = {
+      const input = cleanInput({
         garm_img: garmImg,
         human_img: humanImg,
         garment_des: garmentDesc,
-        category: category
-      };
+        category: category || "upper_body"
+      });
 
       const { url } = await runVtonModel(input);
       if (!url) {
@@ -66,25 +115,31 @@ function App() {
       <main>
         <section className="panel">
           <form onSubmit={handleSubmit}>
-            <label>
-              Garment image URL
+            <label className="file-button">
+              <span>
+                {uploading && uploadingField === "human"
+                  ? "Uploading person image..."
+                  : "Choose person image"}
+              </span>
               <input
-                type="url"
-                value={garmImg}
-                onChange={(event) => setGarmImg(event.target.value)}
-                placeholder="https://example.com/garment.png"
-                required
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleFileUpload(event, "human")}
+                disabled={uploading}
               />
             </label>
 
-            <label>
-              Human image URL
+            <label className="file-button">
+              <span>
+                {uploading && uploadingField === "garment"
+                  ? "Uploading garment image..."
+                  : "Choose garment image"}
+              </span>
               <input
-                type="url"
-                value={humanImg}
-                onChange={(event) => setHumanImg(event.target.value)}
-                placeholder="https://example.com/person.png"
-                required
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleFileUpload(event, "garment")}
+                disabled={uploading}
               />
             </label>
 
@@ -94,7 +149,7 @@ function App() {
                 type="text"
                 value={garmentDesc}
                 onChange={(event) => setGarmentDesc(event.target.value)}
-                placeholder=""
+                placeholder="e.g. pink floral top"
               />
             </label>
 
@@ -108,8 +163,8 @@ function App() {
               </select>
             </label>
 
-            <button type="submit" className="primary-button" disabled={isLoading}>
-              {isLoading ? "Generating..." : "Generate try-on"}
+            <button type="submit" className="primary-button" disabled={isLoading || uploading}>
+              {isLoading ? "Generating..." : uploading ? "Upload in progress..." : "Generate try-on"}
             </button>
           </form>
 
@@ -118,6 +173,12 @@ function App() {
               <span>Status</span>
               <strong>{status}</strong>
             </div>
+            {uploading && (
+              <div className="upload-progress">
+                <span className="spinner" />
+                {uploadingField === "garment" ? "Uploading garment image..." : "Uploading person image..."}
+              </div>
+            )}
             {error && <div className="error">{error}</div>}
             {resultUrl && (
               <div className="result-card">

@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { runVtonModel } from "./api/replicateClient";
 
 const DEFAULT_GARM_IMG = "https://replicate.delivery/pbxt/KgwTlZyFx5aUU3gc5gMiKuD5nNPTgliMlLUWx160G4z99YjO/sweater.webp";
-const DEFAULT_HUMAN_IMG = `${import.meta.env.BASE_URL}model/model.jpeg`;
+// const DEFAULT_HUMAN_IMG = `${import.meta.env.BASE_URL}model/model.jpeg`;
+const DEFAULT_HUMAN_IMG = `https://raw.githubusercontent.com/haroonchishty/wardrobe/refs/heads/main/public/model/model.jpeg`;
 
 function App() {
   const [garmImg, setGarmImg] = useState(DEFAULT_GARM_IMG);

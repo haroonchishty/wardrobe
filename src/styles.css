@@ -17,7 +17,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -93,7 +94,8 @@ label::before {
   content: "💗 ";
 }
 
-input {
+input,
+select {
   width: 100%;
   margin-top: 10px;
   border: 2px solid rgba(236, 72, 153, 0.3);
@@ -102,9 +104,21 @@ input {
   color: #be185d;
   padding: 14px 14px;
   transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%23ec4899' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 10px 6px;
 }
 
-input:focus {
+select {
+  padding-right: 42px;
+}
+
+input:focus,
+select:focus {
   outline: none;
   border-color: #ec4899;
   box-shadow: 0 0 12px rgba(236, 72, 153, 0.3);

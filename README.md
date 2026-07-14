@@ -64,6 +64,13 @@ Then redeploy the worker.
   - Polls for completion
   - Returns the result with CORS headers
 
+## New category option
+
+A new optional category field has been added to the app:
+- The UI lets you select `upper_body`, `lower_body`, or `dresses`
+- That category is forwarded as `category` to the Replicate backend
+- If you leave it blank, the model still runs using the existing description field
+
 ## Why Cloudflare Workers
 
 - Free tier: 100k requests/day

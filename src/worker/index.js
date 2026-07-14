@@ -17,7 +17,7 @@ export default {
     // Route: POST /api/run-vton
     if (url.pathname === "/api/run-vton" && request.method === "POST") {
       try {
-        const { garm_img, human_img, garment_des } = await request.json();
+        const { garm_img, human_img, garment_des, category } = await request.json();
 
         if (!garm_img || !human_img) {
           return new Response(
@@ -37,7 +37,8 @@ export default {
         const input = {
           garm_img,
           human_img,
-          garment_des: garment_des || ""
+          garment_des: garment_des || "",
+          category: category || ""
         };
 
         // Call Replicate API

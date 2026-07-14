@@ -10,6 +10,7 @@ function App() {
   const [garmImg, setGarmImg] = useState(DEFAULT_GARM_IMG);
   const [humanImg, setHumanImg] = useState(DEFAULT_HUMAN_IMG);
   const [garmentDesc, setGarmentDesc] = useState("");
+  const [category, setCategory] = useState("");
   const [status, setStatus] = useState("Ready to generate.");
   const [resultUrl, setResultUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +35,8 @@ function App() {
       const input = {
         garm_img: garmImg,
         human_img: humanImg,
-        garment_des: garmentDesc
+        garment_des: garmentDesc,
+        category: category
       };
 
       const { url } = await runVtonModel(input);
@@ -94,6 +96,16 @@ function App() {
                 onChange={(event) => setGarmentDesc(event.target.value)}
                 placeholder=""
               />
+            </label>
+
+            <label>
+              Category (optional)
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">—</option>
+                <option value="upper_body">Upper body</option>
+                <option value="lower_body">Lower body</option>
+                <option value="dresses">Dresses</option>
+              </select>
             </label>
 
             <button type="submit" className="primary-button" disabled={isLoading}>

@@ -1,0 +1,19 @@
+name = "wardrobe"
+type = "javascript"
+main = "src/worker/index.js"
+compatibility_date = "2026-07-14"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+[[r2.buckets]]
+binding = "BUCKET"
+bucket_name = "wardrobe-uploads"
+preview_bucket_name = "wardrobe-uploads-preview"
+
+[build]
+command = "npm install"
+cwd = "./"
